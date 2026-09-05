@@ -1,151 +1,139 @@
-# Groq Chatbot - AI Assistant with Tool Integration
+# 🚀 Groq Chatbot with Streamlit Web UI
 
-A Python-based interactive AI chatbot powered by **Groq LLM** and built with **LangChain** and **LanGraph**. This chatbot leverages the ReAct (Reasoning and Acting) framework to intelligently use tools and provide meaningful responses to user queries.
+A modern, responsive interactive AI Assistant powered by **Groq Cloud LLMs**, built using **Streamlit**, **LangChain**, and **LangGraph**. Features real-time conversational intelligence, integrated UI and agent tools (Calculator & Greetings), and resilient fallback execution.
+
+---
 
 ## 📋 Table of Contents
 
-- [Project Overview](#project-overview)
-- [Features](#features)
-- [Architecture](#architecture)
-- [Prerequisites](#prerequisites)
-- [Installation & Setup](#installation--setup)
-- [Usage](#usage)
-- [Project Structure](#project-structure)
-- [Available Tools](#available-tools)
-- [Environment Configuration](#environment-configuration)
-- [Troubleshooting](#troubleshooting)
+- [Project Overview](#-project-overview)
+- [Key Features](#-key-features)
+- [Architecture](#-architecture)
+- [Prerequisites](#-prerequisites)
+- [Installation & Setup](#-installation--setup)
+- [Running the Application](#-running-the-application)
+- [Project Structure](#-project-structure)
+- [Available Tools & Capabilities](#-available-tools--capabilities)
+- [Environment Configuration](#-environment-configuration)
+- [Troubleshooting](#-troubleshooting)
+- [Dependencies](#-dependencies)
+- [License](#-license)
 
 ---
 
 ## 🎯 Project Overview
 
-This chatbot is an intelligent conversational agent that can:
-- Engage in natural language conversations
-- Perform calculations on demand
-- Greet users interactively
-- Stream responses in real-time for a better user experience
-- Leverage Groq's high-speed LLM inference for fast responses
+This project provides a sleek, web-based conversational interface for interacting with high-performance LLMs hosted on Groq. Designed for speed, flexibility, and ease of use, the application features:
 
-The project demonstrates modern AI development practices using production-grade frameworks and libraries.
+- **Web-based Chat Interface**: Built with Streamlit, custom CSS styling, and persistent conversation history.
+- **Ultra-Fast LLM Processing**: Powered by Groq's LPU™ Inference Engine for near-instantaneous replies.
+- **Interactive Tool Drawer**: A dedicated toggleable widget panel for direct access to helper tools like Quick Calculator and Greeting Tool.
+- **Graceful Fallback Mode**: If an API key is not configured or network connectivity is limited, the app seamlessly falls back to a safe AST-based math evaluator and heuristic response stub.
 
 ---
 
-## ✨ Features
+## ✨ Key Features
 
-- **Real-time Response Streaming**: Responses are streamed as they're generated for immediate feedback
-- **Tool Integration**: Extensible tool framework allowing the agent to use custom functions
-- **ReAct Framework**: Advanced reasoning and acting pattern for intelligent decision-making
-- **Environment Variable Management**: Secure API key handling via `.env` file
-- **Clean Interactive Interface**: User-friendly command-line interface with clear prompts
-- **Warning Suppression**: Cleaner output by filtering unnecessary deprecation warnings
+- 🌐 **Modern Streamlit Web App**: Clean, responsive dark-themed hero banner and conversational message bubbles.
+- ⚡ **Groq LLM Integration**: Effortless integration with high-speed models (such as `qwen/qwen3.6-27b`, `llama-3.3-70b-versatile`, and `mixtral-8x7b-32768`).
+- 🛠️ **Extensible Tool Framework**:
+  - **Quick Calculator (`ncalculator`)**: Dedicated UI input controls and backend arithmetic solver.
+  - **Greeting Tool (`say_hello`)**: Personalized greeting generator.
+  - **Expandable Tool Drawer (`+`)**: Quick toggle between conversational chat and interactive widgets.
+- 🛡️ **Safe & Resilient Execution**: Built-in AST arithmetic parsing and error sanitization ensure uninterrupted usage even during service disruptions.
+- 💬 **Session State Persistence**: Retains multi-turn conversation history across interactions during a user session.
+- 🔐 **Environment Management**: Secure API key management via `.env` with `python-dotenv`.
 
 ---
 
 ## 🏗️ Architecture
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                   User Input                             │
-└────────────────────┬────────────────────────────────────┘
-                     │
-┌────────────────────▼────────────────────────────────────┐
-│            Main Application (main.py)                    │
-│  ┌─────────────────────────────────────────────────┐   │
-│  │  - Environment Configuration (load_dotenv)     │   │
-│  │  - Tool Definitions (@tool decorators)         │   │
-│  │  - Interactive Loop (REPL)                     │   │
-│  └─────────────────────────────────────────────────┘   │
-└────────────────────┬────────────────────────────────────┘
-                     │
-         ┌───────────┴───────────┐
-         │                       │
-┌────────▼──────────┐   ┌────────▼──────────┐
-│   LangChain       │   │   LanGraph        │
-│  - ChatGroq       │   │  - ReAct Agent    │
-│  - Message Types  │   │  - Agent Executor │
-│  - Tool Binding   │   │  - Stream Handler │
-└────────┬──────────┘   └────────┬──────────┘
-         │                       │
-         └───────────┬───────────┘
-                     │
-         ┌───────────▼───────────┐
-         │   Groq LLM API        │
-         │  (qwen/qwen3.6-27b)   │
-         └───────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────┐
+│                      Streamlit Frontend (Browser)                       │
+│  ┌───────────────────────────────────────────────────────────────────┐  │
+│  │  - Dark Hero Header & Conversational Chat Flow                    │  │
+│  │  - Interactive Tool Drawer (+) [Calculator & Greeting Widgets]    │  │
+│  │  - Query Form & Session State Manager                             │  │
+│  └─────────────────────────────────┬─────────────────────────────────┘  │
+└────────────────────────────────────┼────────────────────────────────────┘
+                                     │ User Query / Actions
+┌────────────────────────────────────▼────────────────────────────────────┐
+│                    Application Core (`main.py`)                         │
+│  ┌───────────────────────────────────────────────────────────────────┐  │
+│  │  - Environment Loader (`python-dotenv`)                           │  │
+│  │  - Tool Definitions (`@tool` / Fallback decorators)               │  │
+│  │  - Response Generator & Error Sanitization Handler                │  │
+│  └──────────────────┬───────────────────────────────┬────────────────┘  │
+└─────────────────────┼───────────────────────────────┼───────────────────┘
+                      │                               │
+        [Groq API Key Available]             [No Key / Fallback Mode]
+                      │                               │
+        ┌─────────────▼─────────────┐   ┌─────────────▼─────────────┐
+        │   LangChain / LangGraph   │   │   Safe AST Heuristic Stub │
+        │  - ChatGroq Interface     │   │  - Arithmetic AST Parser  │
+        │  - Tool Binding & Agent   │   │  - Local Tool Delegation  │
+        └─────────────┬─────────────┘   └─────────────┬─────────────┘
+                      │                               │
+        ┌─────────────▼─────────────┐                 │
+        │      Groq Cloud API       │                 │
+        │   (qwen/qwen3.6-27b)      │                 │
+        └─────────────┬─────────────┘                 │
+                      │                               │
+                      └───────────────┬───────────────┘
+                                      │
+                        ┌─────────────▼─────────────┐
+                        │   Sanitized Chat Output   │
+                        └───────────────────────────┘
 ```
-
-### Component Breakdown:
-
-1. **Main Application (`main.py`)**
-   - Loads environment variables from `.env` file
-   - Initializes the Groq LLM with specified model
-   - Defines custom tools (calculator, say_hello)
-   - Manages the interactive conversation loop
-
-2. **LangChain Integration**
-   - `ChatGroq`: Interface to Groq API
-   - `HumanMessage`: User message representation
-   - `@tool`: Decorator for defining agent tools
-
-3. **LanGraph Framework**
-   - `create_react_agent`: Creates a ReAct agent with tools
-   - Handles tool selection, reasoning, and execution
-   - Manages message streaming
-
-4. **Tool Layer**
-   - **Calculator Tool**: Performs arithmetic operations
-   - **Greeting Tool**: Provides personalized greetings
 
 ---
 
 ## 📋 Prerequisites
 
-Before you begin, ensure you have the following:
+Before running the application, make sure you have:
 
-- **Python 3.8 or higher** installed on your system
-- **Groq API Key** (obtain from [Groq Console](https://console.groq.com))
-- **pip** (Python package manager)
-- **Git** (optional, for cloning repositories)
+- **Python 3.8+** installed on your system.
+- **Groq API Key** (Free registration at [Groq Console](https://console.groq.com)).
+- **pip** (Python package installer).
 
 ---
 
 ## 🚀 Installation & Setup
 
-### Step 1: Navigate to Project Directory
+### 1. Clone or Open the Project
+
+Open your terminal and navigate to the project directory:
 
 ```bash
-cd d:\KLE_Gangavathi\groq_chatbot
+cd groq_chatbot_streamlitUi
 ```
 
-### Step 2: Create Virtual Environment
+### 2. Create a Virtual Environment
 
-Create a Python virtual environment to isolate project dependencies:
+Isolate dependencies by creating a Python virtual environment:
 
 ```bash
-# Windows (PowerShell)
+# Windows (PowerShell or CMD)
 python -m venv .venv
 
-# Windows (Command Prompt)
-python -m venv .venv
-
-# macOS/Linux
+# macOS / Linux
 python3 -m venv .venv
 ```
 
-### Step 3: Activate Virtual Environment
+### 3. Activate the Virtual Environment
 
 #### On Windows (PowerShell):
-```bash
+```powershell
 .\.venv\Scripts\Activate.ps1
 ```
-
-If you encounter an execution policy error, run:
-```bash
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
-```
+> *Note: If you receive a script execution error in PowerShell, run:*
+> ```powershell
+> Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
+> ```
 
 #### On Windows (Command Prompt):
-```bash
+```cmd
 .venv\Scripts\activate.bat
 ```
 
@@ -154,238 +142,140 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
 source .venv/bin/activate
 ```
 
-You should see `(.venv)` prefix in your terminal prompt once activated.
+### 4. Install Dependencies
 
-### Step 4: Install Dependencies
-
-Install all required packages from `requirements.txt`:
+Install required libraries from `requirements.txt`:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### Step 5: Configure Environment Variables
+### 5. Configure Environment Variables
 
-Create a `.env` file in the project root directory:
+Create a `.env` file in the root directory (you can copy `.env.example`):
 
 ```bash
 # Windows (PowerShell)
-echo "GROQ_API_KEY=your_groq_api_key_here" > .env
+Copy-Item .env.example .env
 
-# Or use your preferred text editor and create .env manually
+# macOS / Linux
+cp .env.example .env
 ```
 
-**Example `.env` file:**
-```
-GROQ_API_KEY=your_actual_groq_api_key_here
+Edit `.env` and fill in your Groq API credentials:
+
+```env
+GROQ_API_KEY=gsk_your_actual_groq_api_key_here
 GROQ_MODEL=qwen/qwen3.6-27b
 ```
 
-**Where to get your Groq API Key:**
-1. Visit [Groq Console](https://console.groq.com)
-2. Sign up or log in to your account
-3. Navigate to API Keys section
-4. Create a new API key and copy it
-5. Paste it into the `.env` file
-
 ---
 
-## 💻 Usage
+## 💻 Running the Application
 
-### Running the Chatbot
-
-Once the virtual environment is activated and dependencies are installed:
+Launch the Streamlit web application:
 
 ```bash
-python main.py
+streamlit run main.py
 ```
 
-### Interactive Session Example
+Once started, Streamlit will automatically open your default browser to:
 
 ```
-Initializing Groq model: qwen/qwen3.6-27b...
-Welcome! I'm your PythonAIChatbot assistant. Type 'quit' to exit.
-You can ask me to perform calculations or chat with me.
-
-You: What is 10 plus 5?
-Assistant: Tool has been called.
-The sum of 10 and 5 is 15
-
-You: Say hello to Alice
-Assistant: Tool has been called.
-Hello Alice, I hope you are well today
-
-You: quit
+http://localhost:8501
 ```
-
-### Example Queries
-
-- **Calculations**: "Add 25 and 75", "What's 100 + 50?"
-- **Greetings**: "Say hello to John", "Greet Sarah"
-- **General Chat**: "How are you?", "Tell me a joke"
 
 ---
 
 ## 📁 Project Structure
 
 ```
-groq_chatbot/
+groq_chatbot_streamlitUi/
 │
-├── main.py                 # Main application file
-├── requirements.txt        # Python dependencies
-├── .env                    # Environment variables (create this)
-├── .venv/                  # Virtual environment (auto-created)
-│   ├── Scripts/            # Executable files
-│   ├── Lib/                # Installed packages
-│   └── pyvenv.cfg         # Virtual environment config
-│
-└── README.md              # This file
+├── main.py                 # Streamlit web app, UI layout, agent & fallback logic
+├── requirements.txt        # Python dependencies (Streamlit, LangChain, Groq, etc.)
+├── .env                    # Environment variables (API keys and model config)
+├── .env.example            # Template for environment configuration
+├── .gitignore              # Files and directories ignored by Git
+└── README.md               # Project documentation
 ```
 
 ---
 
-## 🛠️ Available Tools
+## 🛠️ Available Tools & Capabilities
 
-### 1. Calculator Tool
-**Purpose**: Performs basic arithmetic calculations
+### 1. 💬 Conversational Chat
+- Ask general queries, request explanations, or prompt creative generation.
+- Handles multi-turn chat directly in the main conversation window.
 
-**Usage**: Ask the agent to calculate sums
-```
-User: Add 50 and 30
-Assistant: The sum of 50 and 30 is 80
-```
+### 2. 🧮 Calculator Tool (`ncalculator`)
+- **Interactive UI**: Open the tool panel using the **`+`** button, select **`ncalculator`**, enter numeric values, and click **Compute sum**.
+- **Chat Math**: You can also ask calculation queries in chat (e.g., `What is 150 + 275?`), which will be processed by the LLM or the local safe AST evaluator.
 
-**Parameters**:
-- `a` (float): First number
-- `b` (float): Second number
-
-**Returns**: String with calculation result
-
-### 2. Say Hello Tool
-**Purpose**: Provides personalized greetings
-
-**Usage**: Ask the agent to greet someone
-```
-User: Greet Marcus
-Assistant: Hello Marcus, I hope you are well today
-```
-
-**Parameters**:
-- `name` (string): Person's name
-
-**Returns**: Greeting message string
+### 3. 👋 Greeting Tool
+- **Interactive UI**: Open the tool panel (**`+`** button), select **`greeting tool`**, enter a name, and click **Greet**.
+- **Chat Greeting**: Ask the chatbot to greet someone (e.g., `Say hello to Alice`), and receive personalized greeting messages.
 
 ---
 
 ## ⚙️ Environment Configuration
 
-### Environment Variables
+| Variable | Required | Default | Description |
+|---|:---:|---|---|
+| `GROQ_API_KEY` | Optional* | `None` | Your Groq Cloud API authentication key |
+| `GROQ_MODEL` | Optional | `qwen/qwen3.6-27b` | Groq model identifier |
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `GROQ_API_KEY` | (required) | Your Groq API authentication key |
-| `GROQ_MODEL` | `qwen/qwen3.6-27b` | LLM model to use |
+*\*Note: The application includes local fallback stubs and can run without an API key, but full LLM capabilities require a valid `GROQ_API_KEY`.*
 
-### Available Groq Models
+### Popular Groq Models Supported:
 
-- `qwen/qwen3.6-27b` (default)
-- `qwen/qwen-2-7b`
+- `qwen/qwen3.6-27b` *(Default)*
+- `llama-3.3-70b-versatile`
+- `llama-3.1-8b-instant`
 - `mixtral-8x7b-32768`
-- `llama2-70b-4096`
-- `llama2-90b-3-8b`
-
-To use a different model, update the `GROQ_MODEL` variable in your `.env` file.
-
----
-
-## 🔧 Extending the Chatbot
-
-### Adding New Tools
-
-To add new functionality, define a new tool using the `@tool` decorator:
-
-```python
-@tool
-def weather(city: str) -> str:
-    """Useful for getting weather information"""
-    # Your implementation here
-    return f"Weather in {city}: ..."
-
-# Add to tools list in main()
-tools = [calculator, say_hello, weather]
-```
+- `gemma2-9b-it`
 
 ---
 
 ## ❓ Troubleshooting
 
-### Issue: "GROQ_API_KEY is not set in environment"
-
-**Solution**: Ensure your `.env` file exists and contains:
-```
-GROQ_API_KEY=your_actual_key_here
-```
-
-### Issue: Virtual Environment Not Activating
-
-**Windows PowerShell Solution**:
+### 1. `streamlit: command not found`
+Ensure that your virtual environment is active (`.venv`) and packages are installed:
 ```bash
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
-.\.venv\Scripts\Activate.ps1
-```
-
-### Issue: "ModuleNotFoundError" when running
-
-**Solution**: Ensure virtual environment is activated and dependencies are installed:
-```bash
-# Verify activation (should see (.venv) in prompt)
 pip install -r requirements.txt
 ```
 
-### Issue: Slow Response Times
+### 2. "GROQ_API_KEY is not set" / Falling back to stub
+- Check that your `.env` file exists in the root directory.
+- Verify `GROQ_API_KEY` does not contain quotes or trailing whitespace.
+- Obtain a key from [Groq Console](https://console.groq.com/keys).
 
-**Solution**: The model might be processing a complex query. This is normal. Groq provides fast inference, but reasoning-intensive tasks may take longer.
+### 3. PowerShell Script Execution Error
+Run PowerShell with permissions for the current session:
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
+```
 
-### Issue: API Rate Limiting
-
-**Solution**: If you encounter rate limits, wait a few moments before sending the next request or upgrade your Groq API plan.
+### 4. Port 8501 Already in Use
+You can specify a different port when launching Streamlit:
+```bash
+streamlit run main.py --server.port 8502
+```
 
 ---
 
 ## 📦 Dependencies
 
-| Package | Version | Purpose |
-|---------|---------|---------|
-| langchain-core | >=1.5.2 | Core LangChain functionality |
-| langchain-groq | >=1.1.3 | Groq LLM integration |
-| langgraph | >=1.2.10 | Agent orchestration framework |
-| python-dotenv | >=1.2.2 | Environment variable management |
-
----
-
-## 📝 Notes
-
-- The chatbot uses temperature setting of `0` for deterministic responses
-- Deprecation and user warnings are suppressed for a clean interface
-- The agent uses the ReAct framework for intelligent tool selection
-- All responses are streamed in real-time for better UX
+| Package | Minimum Version | Purpose |
+|---|---|---|
+| **streamlit** | `>=1.22.0` | Interactive web application framework |
+| **langchain-core** | `>=1.5.2` | Core abstractions and message primitives |
+| **langchain-groq** | `>=1.1.3` | Groq LLM integration |
+| **langgraph** | `>=1.2.10` | Agent orchestration and graph patterns |
+| **python-dotenv** | `>=1.2.2` | `.env` configuration file loader |
 
 ---
 
 ## 📄 License
 
-This project is open source and available for personal and educational use.
-
----
-
-## 🤝 Support
-
-For issues or questions:
-1. Check the [Troubleshooting](#troubleshooting) section
-2. Verify your Groq API key is valid
-3. Ensure all dependencies are installed correctly
-4. Check that Python version is 3.8 or higher
-
----
-
-**Happy chatting! 🚀**
+This project is licensed under the MIT License — open-source for personal, educational, and commercial exploration.
